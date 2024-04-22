@@ -32,10 +32,7 @@ if authentication_status:
     st.write(f"Welcome *{name}*")
     st.markdown(
         """
-# 1. ChatGPT 3.5
-# 2. ChatGPT 4
-# 3. Gemini Pro
-# 4. Llama3
+# 1. Groq Llama3
     """
     )
 elif authentication_status == False:
