@@ -66,15 +66,6 @@ def make_response(prompt_text, message):
 
 st.title("Groq-Llama3 Chatbot")
 
-st.markdown(
-    """
-    Welcome!
-    
-    Use this chatbot to ask questions to an AI about your Questions!
-    
-    """
-)
-
 with st.sidebar:
     prompt_text = st.text_area(
         "Prompt",
@@ -102,19 +93,41 @@ with st.sidebar:
         Strive to not only answer the question but also to educate the questioner, providing them with a foundation that enables them to grasp more complex concepts in the future.
         """)
 
-send_message("I'm ready! Ask away!", "ai", save=False)
-paint_history()
+st.markdown("""
+    <style>
+    .big-font {
+        font-size:30px !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-authentication_status = st.session_state["authentication_status"]
-if authentication_status:
-    message = st.chat_input("Ask anything about something...")
+if "authentication_status" not in st.session_state:
+    st.markdown("<p class='big-font'>You need to log in from the 'Home' page in the left sidebar.</p>", unsafe_allow_html=True)
+else:
+    st.markdown(
+        """
+        Welcome!
+        
+        Use this chatbot to ask questions to an AI about your Questions!
+        
+        """
+    )
 
-    if message:
-        send_message(message, "human")
-        with st.chat_message("ai"):
-            ai_message = make_response(prompt_text, message)
-            st.write(ai_message)
-            save_messages(ai_message, "ai")
+    send_message("I'm ready! Ask away!", "ai", save=False)
+    paint_history()
+
+    authentication_status = st.session_state["authentication_status"]
+    if authentication_status:
+        message = st.chat_input("Ask anything about something...")
+
+        if message:
+            send_message(message, "human")
+            with st.chat_message("ai"):
+                ai_message = make_response(prompt_text, message)
+                st.write(ai_message)
+                save_messages(ai_message, "ai")
+    else:
+        st.markdown("<p class='big-font'>You need to log in from the 'Home' page in the left sidebar.</p>", unsafe_allow_html=True)
 
 
            

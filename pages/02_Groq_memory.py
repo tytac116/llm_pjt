@@ -141,25 +141,38 @@ def invoke_chain(question):
 
 st.title("Groq-Llama3 Chatbot")
 
-st.markdown(
-    """
-    Welcome!
-    
-    Use this chatbot to ask questions to an AI about your Questions!
-    
-    """
-)
+st.markdown("""
+    <style>
+    .big-font {
+        font-size:30px !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-send_message("I'm ready! Ask away!", "ai", save=False)
-paint_history()
+if "authentication_status" not in st.session_state:
+    st.markdown("<p class='big-font'>You need to log in from the 'Home' page in the left sidebar.</p>", unsafe_allow_html=True)
+else:
+    st.markdown(
+        """
+        Welcome!
+        
+        Use this chatbot to ask questions to an AI about your Questions!
+        
+        """
+    )
 
-authentication_status = st.session_state["authentication_status"]
-if authentication_status:
-    message = st.chat_input("Ask anything about something...")
-    if message:
-        send_message(message, "human")
-        chain = RunnablePassthrough.assign(history=load_memory) | prompt | llm
+    send_message("I'm ready! Ask away!", "ai", save=False)
+    paint_history()
 
-        with st.chat_message("ai"):
-            callback = True
-            invoke_chain(message)
+    authentication_status = st.session_state["authentication_status"]
+    if authentication_status:
+        message = st.chat_input("Ask anything about something...")
+        if message:
+            send_message(message, "human")
+            chain = RunnablePassthrough.assign(history=load_memory) | prompt | llm
+
+            with st.chat_message("ai"):
+                callback = True
+                invoke_chain(message)
+    else:
+        st.markdown("<p class='big-font'>You need to log in from the 'Home' page in the left sidebar.</p>", unsafe_allow_html=True)
