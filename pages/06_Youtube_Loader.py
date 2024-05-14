@@ -1,10 +1,16 @@
 import streamlit as st
 from langchain_openai import ChatOpenAI
 from langchain.document_loaders.youtube import YoutubeLoader
+from langchain_groq import ChatGroq
 
-llm = ChatOpenAI(
+# llm = ChatOpenAI(
+#     temperature=0.1,
+#     model="gpt-3.5-turbo-1106",
+# )
+
+llm = ChatGroq(
     temperature=0.1,
-    model="gpt-3.5-turbo-1106",
+    model_name="Llama3-70b-8192",
 )
 
 st.set_page_config(
@@ -37,4 +43,5 @@ if url:
     if docs:
         with st.chat_message("ai"):
             for doc in docs:
-                st.markdown(doc.page_content + "\n\n")
+                formatted_content = doc.page_content.replace(".", ".<br>")
+                st.markdown(formatted_content + "<br><br>", unsafe_allow_html=True)
