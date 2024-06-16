@@ -11,6 +11,14 @@ from langchain_community.chat_models import ChatOllama
 from langchain.callbacks.base import BaseCallbackHandler
 import os
 
+from langchain_community.document_loaders.generic import GenericLoader
+from langchain_community.document_loaders.parsers.language import LanguageParser
+from langchain_text_splitters import Language
+from langchain_text_splitters import (
+    Language,
+    RecursiveCharacterTextSplitter,
+)
+
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 st.set_page_config(
@@ -48,13 +56,26 @@ def embed_file(file):
     with open(file_path, "wb") as f:
         f.write(file_content)
     cache_dir = LocalFileStore(f"./.cache/private_embeddings/{file.name}")
-    splitter = CharacterTextSplitter.from_tiktoken_encoder(
-        separator="\n",
-        chunk_size=600,
-        chunk_overlap=100,
+    # splitter = CharacterTextSplitter.from_tiktoken_encoder(
+    #     separator="\n",
+    #     chunk_size=600,
+    #     chunk_overlap=100,
+    # )
+    splitter = RecursiveCharacterTextSplitter.from_language(
+        language=Language.CPP, 
+        chunk_size=200, chunk_overlap=10
     )
-    loader = UnstructuredFileLoader(file_path)
-    docs = loader.load_and_split(text_splitter=splitter)
+
+    # loader = UnstructuredFileLoader(file_path)
+    loader = GenericLoader.from_filesystem(
+        file_path, 
+        glob="*",  
+        suffixes=[".cpp", ".py"], 
+        parser=LanguageParser(),
+        )
+    docs = loader.load()
+    print(f"docs Len: {len(docs)}")
+    splitter.split_documents(docs)
     embeddings = OllamaEmbeddings(model="llama3:latest")
     cached_embeddings = CacheBackedEmbeddings.from_bytes_store(embeddings, cache_dir)
     vectorstore = FAISS.from_documents(docs, cached_embeddings)
@@ -119,8 +140,8 @@ st.markdown(
 
 with st.sidebar:
     file = st.file_uploader(
-        "Upload a .txt .pdf or .docx file",
-        type=["pdf", "txt", "docx"],
+        "Upload a .txt .pdf .docx file or .cpp file",
+        type=["pdf", "txt", "docx", "cpp", ".py"],
     )
 
 if file:
