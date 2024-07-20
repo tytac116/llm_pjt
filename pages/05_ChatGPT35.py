@@ -35,7 +35,7 @@ if "gpt3_messages" not in st.session_state:
 
 llm = ChatOpenAI(
     temperature=0.1,
-    model="gpt-3.5-turbo-1106",
+    model="gpt-4o-mini",
     streaming=True,
     callbacks=[ChatCallbackHandler()],
 )
