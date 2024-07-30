@@ -6,7 +6,7 @@ from langchain.memory import ConversationTokenBufferMemory
 from langchain_groq import ChatGroq
 
 st.set_page_config(
-    page_title="Llama3",
+    page_title="Groq",
     page_icon="📃",
 )
 
@@ -29,56 +29,14 @@ class ChatCallbackHandler(BaseCallbackHandler):
             self.message += token
             self.message_box.markdown(self.message)
 
-
-if "groq2_messages" not in st.session_state:
-    st.session_state["groq2_messages"] = []
-
-llm = ChatGroq(
-    temperature=0.1,
-    model_name="llama3-groq-70b-8192-tool-use-preview",
-    streaming=True,
-    callbacks=[ChatCallbackHandler()],
-)
-
-memory = ConversationTokenBufferMemory(
-    llm=llm,
-    max_token_limit=1000,
-    return_messages=True,
-)
-
-if "groq2_chat_summary" not in st.session_state:
-    st.session_state["groq2_chat_summary"] = []
-else:
-    callback = False
-    for chat_list in st.session_state["groq2_chat_summary"]:
-        memory.save_context(
-            {"input": chat_list["question"]},
-            {"output": chat_list["answer"]},
-        )
-
-
-def save_messages(message, role):
-    st.session_state["groq2_messages"].append(
-        {
-            "message": message,
-            "role": role,
-        }
-    )
-
-
-def send_message(message, role, save=True):
-    with st.chat_message(role):
-        st.markdown(message)
-    if save:
-        save_messages(message, role)
-
-
-def paint_history():
-    for message in st.session_state["groq2_messages"]:
-        send_message(message["message"], message["role"], save=False)
-
+options = ['llama-3.1-405b-reasoning', 
+           'llama-3.1-70b-versatile', 
+           'llama3-groq-70b-8192-tool-use-preview', 
+           'llama3-70b-8192']
 
 with st.sidebar:
+    selected_option = st.selectbox('Select a model:', options, index=1)
+
     prompt_text = st.text_area(
         "Prompt",
         """Explanation: As a hardware and software expert, your task is to provide detailed and easily understandable explanations in response to inquiries or statements. 
@@ -104,6 +62,53 @@ with st.sidebar:
         When answering, it's important to remember that your goal is to make the information as accessible as possible. 
         Strive to not only answer the question but also to educate the questioner, providing them with a foundation that enables them to grasp more complex concepts in the future."""
         )
+    
+if "groq_messages" not in st.session_state:
+    st.session_state["groq_messages"] = []
+
+llm = ChatGroq(
+    temperature=0.1,
+    model_name=selected_option,
+    streaming=True,
+    callbacks=[ChatCallbackHandler()],
+)
+
+memory = ConversationTokenBufferMemory(
+    llm=llm,
+    max_token_limit=1000,
+    return_messages=True,
+)
+
+if "groq_chat_summary" not in st.session_state:
+    st.session_state["groq_chat_summary"] = []
+else:
+    callback = False
+    for chat_list in st.session_state["groq_chat_summary"]:
+        memory.save_context(
+            {"input": chat_list["question"]},
+            {"output": chat_list["answer"]},
+        )
+
+
+def save_messages(message, role):
+    st.session_state["groq_messages"].append(
+        {
+            "message": message,
+            "role": role,
+        }
+    )
+
+
+def send_message(message, role, save=True):
+    with st.chat_message(role):
+        st.markdown(message)
+    if save:
+        save_messages(message, role)
+
+
+def paint_history():
+    for message in st.session_state["groq_messages"]:
+        send_message(message["message"], message["role"], save=False)
 
 prompt = ChatPromptTemplate.from_messages(
     [
@@ -124,7 +129,7 @@ def load_memory(_):
 
 
 def save_context(question, result):
-    st.session_state["groq2_chat_summary"].append(
+    st.session_state["groq_chat_summary"].append(
         {
             "question": question,
             "answer": result,

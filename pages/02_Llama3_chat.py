@@ -75,7 +75,7 @@ with st.sidebar:
 
 llm = ChatOllama(
     temperature=0.1,
-    model="llama3:latest",
+    model="llama3.1:latest",
     streaming=True,
     callbacks=[ChatCallbackHandler()],
 )
@@ -170,7 +170,7 @@ def translate_answer():
     )
     translate_llm = ChatOllama(
         temperature=0.1,
-        model="llama3:latest",
+        model="llama3.1:latest",
         streaming=True,
         callbacks=[ChatCallbackHandler()],
     )

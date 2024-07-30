@@ -10,7 +10,7 @@ from langchain_groq import ChatGroq
 
 llm = ChatGroq(
     temperature=0.1,
-    model_name="Llama3-70b-8192",
+    model_name="llama-3.1-70b-versatile",
 )
 
 st.set_page_config(

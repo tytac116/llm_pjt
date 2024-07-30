@@ -6,7 +6,7 @@ from langchain.callbacks.base import BaseCallbackHandler
 from langchain.memory import ConversationTokenBufferMemory
 
 st.set_page_config(
-    page_title="ChatGPT3.5",
+    page_title="ChatGPT4-mini",
     page_icon="📃",
 )
 
@@ -130,7 +130,7 @@ def invoke_chain(question):
     save_context(message, result.content)
 
 
-st.title("ChatGPT3.5 Chatbot")
+st.title("ChatGPT4-mini Chatbot")
 
 st.markdown(
     """

@@ -34,7 +34,7 @@ class ChatCallbackHandler(BaseCallbackHandler):
 
 
 llm = ChatOllama(
-    model="llama3:latest",
+    model="llama3.1:latest",
     temperature=0.1,
     streaming=True,
     callbacks=[ChatCallbackHandler()],
@@ -45,21 +45,37 @@ llm = ChatOllama(
 def embed_file(file):
     file_content = file.read()
     file_path = f"./.cache/private_files/{file.name}"
+    
+    # 파일을 디스크에 저장
     with open(file_path, "wb") as f:
         f.write(file_content)
+    
+    # 캐시 디렉토리 경로 설정
     cache_dir = LocalFileStore(f"./.cache/private_embeddings/{file.name}")
-    splitter = CharacterTextSplitter.from_tiktoken_encoder(
-        separator="\n",
-        chunk_size=600,
-        chunk_overlap=100,
-    )
-    loader = UnstructuredFileLoader(file_path)
-    docs = loader.load_and_split(text_splitter=splitter)
-    embeddings = OllamaEmbeddings(model="llama3:latest")
-    cached_embeddings = CacheBackedEmbeddings.from_bytes_store(embeddings, cache_dir)
-    vectorstore = FAISS.from_documents(docs, cached_embeddings)
-    retriver = vectorstore.as_retriever()
-    return retriver
+    
+    # 캐시된 embeddings 파일이 존재하는지 확인
+    if os.path.exists(f"./.cache/private_embeddings/{file.name}"):
+        # 기존 embeddings 파일이 있으면 이를 로드
+        embeddings = OllamaEmbeddings(model="llama3.1:latest")
+        cached_embeddings = CacheBackedEmbeddings.from_bytes_store(embeddings, cache_dir)
+        vectorstore = FAISS.load_local(f"./.cache/private_embeddings/{file.name}", 
+                                       cached_embeddings, allow_dangerous_deserialization=True)
+    else:
+        # 캐시된 embeddings 파일이 없으면 새로 생성
+        splitter = CharacterTextSplitter.from_tiktoken_encoder(
+            separator="\n",
+            chunk_size=600,
+            chunk_overlap=100,
+        )
+        loader = UnstructuredFileLoader(file_path)
+        docs = loader.load_and_split(text_splitter=splitter)
+        embeddings = OllamaEmbeddings(model="llama3.1:latest")
+        cached_embeddings = CacheBackedEmbeddings.from_bytes_store(embeddings, cache_dir)
+        vectorstore = FAISS.from_documents(docs, cached_embeddings)
+        vectorstore.save_local(f"./.cache/private_embeddings/{file.name}")
+    
+    retriever = vectorstore.as_retriever()
+    return retriever
  
 
 def save_messages(message, role):
